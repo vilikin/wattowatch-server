@@ -1,21 +1,19 @@
 package com.vilikin
 
+import com.vilikin.routes.userRoutes
+import com.vilikin.services.UserService
 import io.ktor.application.Application
-import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.CORS
 import io.ktor.features.CallLogging
 import io.ktor.features.Compression
 import io.ktor.features.ContentNegotiation
 import io.ktor.gson.gson
-import io.ktor.response.respond
-import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.util.KtorExperimentalAPI
 import kotliquery.HikariCP
 import org.flywaydb.core.Flyway
 import org.kodein.di.generic.bind
-import org.kodein.di.generic.instance
 import org.kodein.di.generic.singleton
 import org.kodein.di.ktor.kodein
 
@@ -39,17 +37,14 @@ fun Application.module(testing: Boolean = false) {
     Flyway.configure().dataSource(hikari).load().migrate()
 
     kodein {
-        bind<PersonService>() with singleton { PersonService(hikari) }
+        bind<UserService>() with singleton {
+            UserService(
+                hikari
+            )
+        }
     }
 
     routing {
-        get("/") {
-            val personService by kodein().instance<PersonService>()
-            call.respond(personService.getPersons())
-        }
-
-        get("/json/gson") {
-            call.respond(mapOf("hello" to "world"))
-        }
+        userRoutes()
     }
 }
