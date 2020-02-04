@@ -1,71 +1,51 @@
 package com.vilikin
 
-import io.ktor.application.*
-import io.ktor.response.*
-import io.ktor.request.*
-import io.ktor.features.*
-import org.slf4j.event.*
-import io.ktor.routing.*
-import io.ktor.http.*
-import io.ktor.gson.*
-import io.ktor.client.*
-import io.ktor.client.engine.apache.*
-import io.ktor.client.features.json.*
-import io.ktor.client.request.*
-import kotlinx.coroutines.*
-import io.ktor.client.features.logging.*
+import io.ktor.application.Application
+import io.ktor.application.call
+import io.ktor.application.install
+import io.ktor.features.CORS
+import io.ktor.features.CallLogging
+import io.ktor.features.Compression
+import io.ktor.features.ContentNegotiation
+import io.ktor.gson.gson
+import io.ktor.response.respond
+import io.ktor.routing.get
+import io.ktor.routing.routing
+import io.ktor.util.KtorExperimentalAPI
+import kotliquery.HikariCP
+import org.flywaydb.core.Flyway
+import org.kodein.di.generic.bind
+import org.kodein.di.generic.instance
+import org.kodein.di.generic.singleton
+import org.kodein.di.ktor.kodein
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
+@KtorExperimentalAPI
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
-    install(Compression) {
-        gzip {
-            priority = 1.0
-        }
-        deflate {
-            priority = 10.0
-            minimumSize(1024) // condition
-        }
-    }
+    install(Compression)
+    install(CORS)
+    install(CallLogging)
+    install(ContentNegotiation) { gson() }
 
-    install(CallLogging) {
-        level = Level.INFO
-        filter { call -> call.request.path().startsWith("/") }
-    }
+    val dbConfig = environment.config.config("db.jdbc")
+    val url = dbConfig.property("url").getString()
+    val username = dbConfig.property("username").getString()
+    val password = dbConfig.property("password").getString()
 
-    install(CORS) {
-    }
+    val hikari = HikariCP.default(url, username, password)
+    Flyway.configure().dataSource(hikari).load().migrate()
 
-    install(ContentNegotiation) {
-        gson {
-        }
-    }
-
-    val client = HttpClient(Apache) {
-        install(JsonFeature) {
-            serializer = GsonSerializer()
-        }
-        install(Logging) {
-            level = LogLevel.HEADERS
-        }
-    }
-
-    runBlocking {
-        // Sample for making a HTTP Client request
-        /*
-        val message = client.post<JsonSampleClass> {
-            url("http://127.0.0.1:8080/path/to/endpoint")
-            contentType(ContentType.Application.Json)
-            body = JsonSampleClass(hello = "world")
-        }
-        */
+    kodein {
+        bind<PersonService>() with singleton { PersonService(hikari) }
     }
 
     routing {
         get("/") {
-            call.respondText("HELLO WORLDi!", contentType = ContentType.Text.Plain)
+            val personService by kodein().instance<PersonService>()
+            call.respond(personService.getPersons())
         }
 
         get("/json/gson") {
@@ -73,6 +53,3 @@ fun Application.module(testing: Boolean = false) {
         }
     }
 }
-
-data class JsonSampleClass(val hello: String)
-
