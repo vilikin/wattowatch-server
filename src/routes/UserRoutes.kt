@@ -1,5 +1,6 @@
 package com.vilikin.routes
 
+import com.vilikin.services.User
 import com.vilikin.services.UserService
 import io.ktor.application.call
 import io.ktor.request.receive
@@ -21,7 +22,7 @@ fun Route.userRoutes() {
     route("/users") {
         post {
             val (name) = call.receive<CreateUserPayload>()
-            val user = userService.createUser(name)
+            val user = userService.createUser(User(name))
             call.respond(user)
         }
 

@@ -23,8 +23,7 @@ CREATE TABLE videos (
 );
 
 CREATE TABLE live_streams (
-    id BIGSERIAL NOT NULL,
-    id_in_source_system VARCHAR NOT NULL,
+    id SERIAL NOT NULL,
     channel_id INT NOT NULL REFERENCES channels (id),
     title VARCHAR NOT NULL,
     live BOOLEAN NOT NULL,
@@ -33,5 +32,6 @@ CREATE TABLE live_streams (
 
 CREATE TABLE user_is_subscribed_to_channel (
     user_id INT NOT NULL REFERENCES users (id),
-    channel_id INT NOT NULL REFERENCES channels (id)
+    channel_id INT NOT NULL REFERENCES channels (id),
+    PRIMARY KEY (user_id, channel_id)
 );
