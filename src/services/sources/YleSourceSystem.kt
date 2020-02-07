@@ -50,6 +50,7 @@ data class YleProgram(
     val title: YleLocalizedString,
     val description: YleLocalizedString,
     val partOfSeason: YleSeason,
+    val partOfSeries: YleSeries?,
     val episodeNumber: Int,
     val publicationEvent: List<YlePublicationEvent>
 ) {
@@ -106,6 +107,16 @@ class YleApiClient {
 
         return response.data
     }
+
+    suspend fun getProgrammesWithQuery(query: String): List<YleProgram> {
+        val response = client.get<YleResponse<List<YleProgram>>>("$baseUrl/programs/items.json") {
+            parameter("q", query)
+            parameter("type", "program")
+            parameter("limit", 100)
+        }
+
+        return response.data
+    }
 }
 
 object YleSourceSystem : SourceSystem() {
@@ -130,5 +141,19 @@ object YleSourceSystem : SourceSystem() {
 
     override suspend fun getLiveStreams(channels: List<PersistedChannel>): List<LiveStream> {
         return emptyList()
+    }
+
+    override suspend fun getChannelSuggestions(query: String): List<Channel> {
+        return yleApiClient.getProgrammesWithQuery(query)
+            .filter { it.partOfSeries != null }
+            .distinctBy { it.partOfSeries!!.id }
+            .map {
+                Channel(
+                    SourceSystemId.YLE,
+                    it.partOfSeries!!.id,
+                    it.partOfSeries.title.fi,
+                    null
+                )
+            }
     }
 }

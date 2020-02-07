@@ -1,17 +1,16 @@
 package com.vilikin.routes
 
 import com.vilikin.services.ChannelService
+import com.vilikin.services.SourceSystemFeature
 import com.vilikin.services.SourceSystemId
 import com.vilikin.services.SourceSystemService
-import com.vilikin.services.User
 import com.vilikin.services.UserService
 import io.ktor.application.call
+import io.ktor.http.HttpStatusCode
 import io.ktor.request.header
-import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
-import io.ktor.routing.post
 import io.ktor.routing.route
 import org.kodein.di.generic.instance
 import org.kodein.di.ktor.kodein
@@ -22,6 +21,17 @@ fun Route.channelRoutes() {
     val sourceSystemService by kodein().instance<SourceSystemService>()
 
     route("/channels") {
+        get("/suggestions") {
+            val query = call.parameters["query"]!!
+            val sourceSystemId = SourceSystemId.valueOf(call.parameters["system"]!!)
+
+            if (sourceSystemId.supportedFeatures.contains(SourceSystemFeature.CHANNEL_SUGGESTIONS)) {
+                call.respond(sourceSystemId.sourceSystem.getChannelSuggestions(query))
+            } else {
+                call.respond(HttpStatusCode.BadRequest)
+            }
+        }
+
         route("/actions") {
             get("/is-id-valid") {
                 val id = call.parameters["channel_id"]!!

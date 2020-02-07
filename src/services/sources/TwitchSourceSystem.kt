@@ -97,4 +97,8 @@ object TwitchSourceSystem : SourceSystem() {
             )
         }
     }
+
+    override suspend fun getChannelSuggestions(query: String): List<Channel> {
+        return emptyList()
+    }
 }
