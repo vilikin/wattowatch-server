@@ -3,6 +3,7 @@ package com.vilikin
 import com.vilikin.routes.channelRoutes
 import com.vilikin.routes.liveStreamRoutes
 import com.vilikin.routes.userRoutes
+import com.vilikin.routes.videoRoutes
 import com.vilikin.services.Channel
 import com.vilikin.services.ChannelService
 import com.vilikin.services.LiveStream
@@ -11,6 +12,9 @@ import com.vilikin.services.PersistedChannel
 import com.vilikin.services.SourceSystemId
 import com.vilikin.services.SourceSystemService
 import com.vilikin.services.UserService
+import com.vilikin.services.VideoService
+import com.vilikin.services.sources.YleApiClient
+import com.vilikin.utils.DateTimeDeserializer
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -39,7 +43,11 @@ fun Application.module(testing: Boolean = false) {
     install(Compression)
     install(CORS)
     install(CallLogging)
-    install(ContentNegotiation) { gson() }
+    install(ContentNegotiation) {
+        gson {
+            registerTypeAdapter(DateTime::class.java, DateTimeDeserializer())
+        }
+    }
 
     Flyway.configure().dataSource(Config.hikariDataSource).load().migrate()
 
@@ -47,11 +55,13 @@ fun Application.module(testing: Boolean = false) {
         val userService = UserService(Config.hikariDataSource)
         val channelService = ChannelService(Config.hikariDataSource)
         val liveStreamService = LiveStreamService(Config.hikariDataSource)
-        val sourceSystemService = SourceSystemService(channelService, liveStreamService)
+        val videoService = VideoService(Config.hikariDataSource)
+        val sourceSystemService = SourceSystemService(channelService, liveStreamService, videoService)
 
         bind<UserService>() with singleton { userService }
         bind<ChannelService>() with singleton { channelService }
         bind<LiveStreamService>() with singleton { liveStreamService }
+        bind<VideoService>() with singleton { videoService }
         bind<SourceSystemService>() with singleton { sourceSystemService }
     }
 
@@ -59,5 +69,6 @@ fun Application.module(testing: Boolean = false) {
         userRoutes()
         channelRoutes()
         liveStreamRoutes()
+        videoRoutes()
     }
 }

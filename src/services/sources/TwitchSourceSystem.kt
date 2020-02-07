@@ -38,7 +38,7 @@ data class TwitchStream(
     @SerializedName("started_at") val startedAt: String
 )
 
-class TwitchClient() {
+class TwitchApiClient {
     private val clientId = Config.twitch.clientId
     private val baseUrl = Config.twitch.baseUrl
 
@@ -74,9 +74,9 @@ class TwitchClient() {
 }
 
 object TwitchSourceSystem : SourceSystem() {
-    private val twitchClient = TwitchClient()
+    private val twitchClient = TwitchApiClient()
 
-    override suspend fun getNewVideosOfChannel(channel: PersistedChannel, since: DateTime): List<Video> {
+    override suspend fun getNewVideosOfChannel(channel: PersistedChannel, since: DateTime?): List<Video> {
         return emptyList()
     }
 

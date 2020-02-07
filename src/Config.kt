@@ -16,6 +16,7 @@ private inline fun <reified T> requireEnvVar(key: String): T {
 object Config {
     val jdbc = JDBCConfig
     val twitch = TwitchConfig
+    val yle = YleConfig
 
     val hikariDataSource = HikariCP.default(jdbc.url, jdbc.username, jdbc.password)
 }
@@ -29,4 +30,10 @@ object JDBCConfig {
 object TwitchConfig {
     val baseUrl: String = requireEnvVar("TWITCH_BASE_URL")
     val clientId: String = requireEnvVar("TWITCH_CLIENT_ID")
+}
+
+object YleConfig {
+    val baseUrl: String = requireEnvVar("YLE_BASE_URL")
+    val appId: String = requireEnvVar("YLE_APP_ID")
+    val appKey: String = requireEnvVar("YLE_APP_KEY")
 }

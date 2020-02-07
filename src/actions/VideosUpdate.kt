@@ -9,7 +9,7 @@ import com.vilikin.services.VideoService
 import kotlinx.coroutines.runBlocking
 import org.flywaydb.core.Flyway
 
-// Action that updates status of all live streams of all source systems
+// Action that fetches all new videos from all source systems
 fun main(args: Array<String>) {
     Flyway.configure().dataSource(Config.hikariDataSource).load().migrate()
 
@@ -24,6 +24,6 @@ fun main(args: Array<String>) {
     )
 
     runBlocking {
-        sourceSystemService.updateLiveStreamsOfSourceSystem(SourceSystemId.TWITCH)
+        sourceSystemService.addNewVideosFromSourceSystem(SourceSystemId.YLE)
     }
 }

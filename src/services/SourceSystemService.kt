@@ -1,31 +1,24 @@
 package com.vilikin.services
 
 import com.vilikin.services.sources.TwitchSourceSystem
+import com.vilikin.services.sources.YleSourceSystem
 import org.joda.time.DateTime
 
 enum class SourceSystemId(val sourceSystem: SourceSystem) {
-    TWITCH(TwitchSourceSystem)
+    TWITCH(TwitchSourceSystem),
+    YLE(YleSourceSystem)
 }
-
-data class Video(
-    val id: Long? = null,
-    val idInSourceSystem: String,
-    val channel: Channel,
-    val title: String,
-    val url: String?,
-    val publishedAt: DateTime,
-    val persistedAt: DateTime
-)
 
 abstract class SourceSystem {
     abstract suspend fun getChannel(channelIdInSourceSystem: String): Channel?
-    abstract suspend fun getNewVideosOfChannel(channel: PersistedChannel, since: DateTime): List<Video>
+    abstract suspend fun getNewVideosOfChannel(channel: PersistedChannel, since: DateTime?): List<Video>
     abstract suspend fun getLiveStreams(channels: List<PersistedChannel>): List<LiveStream>
 }
 
 class SourceSystemService(
     private val channelService: ChannelService,
-    private val liveStreamService: LiveStreamService
+    private val liveStreamService: LiveStreamService,
+    private val videoService: VideoService
 ) {
     suspend fun isChannelValid(sourceSystemId: SourceSystemId, channelIdInSourceSystem: String): Boolean {
         return sourceSystemId.sourceSystem.getChannel(channelIdInSourceSystem) != null
@@ -40,6 +33,16 @@ class SourceSystemService(
 
     suspend fun getChannel(sourceSystemId: SourceSystemId, channelIdInSourceSystem: String): Channel? {
         return sourceSystemId.sourceSystem.getChannel(channelIdInSourceSystem)
+    }
+
+    suspend fun addNewVideosFromSourceSystem(sourceSystemId: SourceSystemId) {
+        val channels = channelService.getChannelsOfSourceSystem(sourceSystemId)
+        channels.forEach { channel ->
+            val latestVideoOfChannel = videoService.getLatestVideosFromChannels(listOf(channel), 1)
+                .firstOrNull()
+            val newVideos = sourceSystemId.sourceSystem.getNewVideosOfChannel(channel, latestVideoOfChannel?.publishedAt)
+            newVideos.forEach { videoService.addVideo(it) }
+        }
     }
 }
 
