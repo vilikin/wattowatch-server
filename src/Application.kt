@@ -2,6 +2,7 @@ package com.vilikin
 
 import com.vilikin.routes.channelRoutes
 import com.vilikin.routes.liveStreamRoutes
+import com.vilikin.routes.sourceSystemRoutes
 import com.vilikin.routes.userRoutes
 import com.vilikin.routes.videoRoutes
 import com.vilikin.services.ChannelService
@@ -61,5 +62,6 @@ fun Application.module(testing: Boolean = false) {
         channelRoutes()
         liveStreamRoutes()
         videoRoutes()
+        sourceSystemRoutes()
     }
 }
