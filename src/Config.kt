@@ -14,6 +14,7 @@ private inline fun <reified T> requireEnvVar(key: String): T {
 }
 
 object Config {
+    val port: Int = requireEnvVar("PORT")
     val jdbc = JDBCConfig
     val twitch = TwitchConfig
     val yle = YleConfig

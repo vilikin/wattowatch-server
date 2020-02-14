@@ -21,6 +21,8 @@ import io.ktor.gson.gson
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.routing.routing
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
 import org.flywaydb.core.Flyway
 import org.joda.time.DateTime
@@ -28,47 +30,44 @@ import org.kodein.di.generic.bind
 import org.kodein.di.generic.singleton
 import org.kodein.di.ktor.kodein
 
-fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
-
-@KtorExperimentalAPI
-@Suppress("unused") // Referenced in application.conf
-@kotlin.jvm.JvmOverloads
-fun Application.module(testing: Boolean = false) {
-    install(Compression)
-    install(CORS) {
-        anyHost()
-        HttpMethod.DefaultMethods.forEach { method(it) }
-        header(HttpHeaders.ContentType)
-        header("x-user-id")
-    }
-    install(CallLogging)
-    install(ContentNegotiation) {
-        gson {
-            registerTypeAdapter(DateTime::class.java, DateTimeDeserializer())
+fun main(args: Array<String>) {
+    embeddedServer(Netty, Config.port) {
+        install(Compression)
+        install(CORS) {
+            anyHost()
+            HttpMethod.DefaultMethods.forEach { method(it) }
+            header(HttpHeaders.ContentType)
+            header("x-user-id")
         }
-    }
+        install(CallLogging)
+        install(ContentNegotiation) {
+            gson {
+                registerTypeAdapter(DateTime::class.java, DateTimeDeserializer())
+            }
+        }
 
-    Flyway.configure().dataSource(Config.hikariDataSource).load().migrate()
+        Flyway.configure().dataSource(Config.hikariDataSource).load().migrate()
 
-    kodein {
-        val userService = UserService(Config.hikariDataSource)
-        val channelService = ChannelService(Config.hikariDataSource)
-        val liveStreamService = LiveStreamService(Config.hikariDataSource)
-        val videoService = VideoService(Config.hikariDataSource)
-        val sourceSystemService = SourceSystemService(channelService, liveStreamService, videoService)
+        kodein {
+            val userService = UserService(Config.hikariDataSource)
+            val channelService = ChannelService(Config.hikariDataSource)
+            val liveStreamService = LiveStreamService(Config.hikariDataSource)
+            val videoService = VideoService(Config.hikariDataSource)
+            val sourceSystemService = SourceSystemService(channelService, liveStreamService, videoService)
 
-        bind<UserService>() with singleton { userService }
-        bind<ChannelService>() with singleton { channelService }
-        bind<LiveStreamService>() with singleton { liveStreamService }
-        bind<VideoService>() with singleton { videoService }
-        bind<SourceSystemService>() with singleton { sourceSystemService }
-    }
+            bind<UserService>() with singleton { userService }
+            bind<ChannelService>() with singleton { channelService }
+            bind<LiveStreamService>() with singleton { liveStreamService }
+            bind<VideoService>() with singleton { videoService }
+            bind<SourceSystemService>() with singleton { sourceSystemService }
+        }
 
-    routing {
-        userRoutes()
-        channelRoutes()
-        liveStreamRoutes()
-        videoRoutes()
-        sourceSystemRoutes()
-    }
+        routing {
+            userRoutes()
+            channelRoutes()
+            liveStreamRoutes()
+            videoRoutes()
+            sourceSystemRoutes()
+        }
+    }.start(wait = true)
 }

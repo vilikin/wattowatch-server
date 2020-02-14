@@ -17,7 +17,7 @@ apply plugin: 'com.github.johnrengelman.shadow'
 
 group 'com.vilikin'
 version '0.0.1'
-mainClassName = 'io.ktor.server.netty.EngineMain'
+mainClassName = 'com.vilikin.ApplicationKt'
 
 sourceSets {
     main.kotlin.srcDirs = main.java.srcDirs = ['src']
@@ -57,7 +57,7 @@ dependencies {
 task serverJar(type: ShadowJar, dependsOn: 'build') {
     group = "shadow"
     description = "Builds an executable Jar for the API server"
-    manifest.attributes 'Main-Class': 'io.ktor.server.netty.EngineMain'
+    manifest.attributes 'Main-Class': 'com.vilikin.ApplicationKt'
     classifier = 'server'
     from(project.convention.getPlugin(JavaPluginConvention).sourceSets.main.output)
     configurations = [project.configurations.runtimeClasspath]
