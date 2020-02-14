@@ -22,9 +22,9 @@ object Config {
 }
 
 object JDBCConfig {
-    val url: String = requireEnvVar("JDBC_URL")
-    val username: String = requireEnvVar("JDBC_USERNAME")
-    val password: String = requireEnvVar("JDBC_PASSWORD")
+    val url: String = requireEnvVar("JDBC_DATABASE_URL")
+    val username: String = requireEnvVar("JDBC_DATABASE_USERNAME")
+    val password: String = requireEnvVar("JDBC_DATABASE_PASSWORD")
 }
 
 object TwitchConfig {
