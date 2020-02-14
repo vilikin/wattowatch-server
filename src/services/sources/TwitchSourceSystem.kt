@@ -21,7 +21,8 @@ import org.joda.time.DateTime
 data class TwitchUser(
     val id: String,
     val login: String,
-    @SerializedName("display_name") val displayName: String
+    @SerializedName("display_name") val displayName: String,
+    @SerializedName("profile_image_url") val profileImageUrl: String
 )
 
 data class TwitchResponse<T>(
@@ -35,7 +36,8 @@ data class TwitchStream(
     val type: String,
     val title: String,
     @SerializedName("viewer_count") val viewerCount: Int,
-    @SerializedName("started_at") val startedAt: String
+    @SerializedName("started_at") val startedAt: String,
+    @SerializedName("thumbnail_url") val thumbnailUrl: String
 )
 
 class TwitchApiClient {
@@ -82,7 +84,7 @@ object TwitchSourceSystem : SourceSystem() {
 
     override suspend fun getChannel(channelIdInSourceSystem: String): Channel? {
         return twitchClient.getUsers(listOf(channelIdInSourceSystem)).map {
-            Channel(SourceSystemId.TWITCH, it.login, it.displayName, null)
+            Channel(SourceSystemId.TWITCH, it.login, it.displayName, null, it.profileImageUrl)
         }.firstOrNull()
     }
 
@@ -93,7 +95,8 @@ object TwitchSourceSystem : SourceSystem() {
                 channel = channel,
                 title = twitchStream.title,
                 live = twitchStream.type == "live",
-                liveSince = DateTime.parse(twitchStream.startedAt)
+                liveSince = DateTime.parse(twitchStream.startedAt),
+                imageUrl = twitchStream.thumbnailUrl.replace("-{width}x{height}", "")
             )
         }
     }

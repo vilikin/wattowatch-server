@@ -25,10 +25,17 @@ data class YleLocalizedString(
     val fi: String
 )
 
+data class YleImage(
+    val id: String?,
+    val available: Boolean
+)
+
 data class YleSeries(
     val id: String,
     val description: YleLocalizedString,
-    val title: YleLocalizedString
+    val title: YleLocalizedString,
+    val image: YleImage?,
+    val season: List<YleSeason>?
 )
 
 data class YleSeason(
@@ -49,10 +56,11 @@ data class YleProgram(
     val id: String,
     val title: YleLocalizedString,
     val description: YleLocalizedString,
-    val partOfSeason: YleSeason,
+    val partOfSeason: YleSeason?,
     val partOfSeries: YleSeries?,
     val episodeNumber: Int,
-    val publicationEvent: List<YlePublicationEvent>
+    val publicationEvent: List<YlePublicationEvent>,
+    val image: YleImage?
 ) {
     val isAvailableInAreena: Boolean
         get() = publicationEvent.any {
@@ -64,15 +72,38 @@ data class YleProgram(
             it.service.id == "yle-areena"
         }?.startTime
 
+    private fun sanitizeNumber(num: Int?) = if (num == null || num == 0) null else num
+
+    private fun getEpisodeNumber(): Int? = sanitizeNumber(episodeNumber)
+
+    private fun getSeasonNumber(): Int? {
+        return when {
+            partOfSeason != null -> sanitizeNumber(partOfSeason.seasonNumber)
+            partOfSeries?.season?.firstOrNull()?.seasonNumber != null -> sanitizeNumber(partOfSeries.season.first().seasonNumber)
+            else -> null
+        }
+    }
+
     fun toVideo(channel: PersistedChannel): Video {
         return Video(
             id,
             channel,
             title.fi,
             null,
-            availableInAreenaFrom!!
+            availableInAreenaFrom!!,
+            image?.let { getYleImageUrl(it) },
+            getEpisodeNumber(),
+            getSeasonNumber()
         )
     }
+}
+
+fun getYleImageUrl(yleImage: YleImage): String? {
+    if (!yleImage.available) {
+        return null
+    }
+
+    return "http://images.cdn.yle.fi/image/upload/${yleImage.id}.jpg"
 }
 
 class YleApiClient {
@@ -135,7 +166,8 @@ object YleSourceSystem : SourceSystem() {
             SourceSystemId.YLE,
             yleSeries.id,
             yleSeries.title.fi,
-            null
+            null,
+            yleSeries.image?.let { getYleImageUrl(it) }
         )
     }
 
@@ -152,7 +184,8 @@ object YleSourceSystem : SourceSystem() {
                     SourceSystemId.YLE,
                     it.partOfSeries!!.id,
                     it.partOfSeries.title.fi,
-                    null
+                    null,
+                    it.image?.let { getYleImageUrl(it) }
                 )
             }
     }

@@ -21,6 +21,12 @@ fun Route.channelRoutes() {
     val sourceSystemService by kodein().instance<SourceSystemService>()
 
     route("/channels") {
+        get {
+            val userId = Integer.parseInt(call.request.header("x-user-id")!!)
+            val channels = channelService.getChannelsUserIsSubscribedTo(userId)
+            call.respond(channels)
+        }
+
         get("/suggestions") {
             val query = call.parameters["query"]!!
             val sourceSystemId = SourceSystemId.valueOf(call.parameters["system"]!!)
@@ -61,6 +67,20 @@ fun Route.channelRoutes() {
                     val persistedChannel = channelService.createChannel(channel)
                     channelService.addSubscription(persistedChannel, userFromDb)
                 }
+
+                call.respond(mapOf("success" to true))
+                return@get
+            }
+
+            get("/unsubscribe") {
+                val userId = Integer.parseInt(call.request.header("x-user-id")!!)
+                val channelIdInSourceSystem = call.parameters["channel_id"]!!
+                val sourceSystemId = SourceSystemId.valueOf(call.parameters["system"]!!)
+
+                val userFromDb = userService.getUser(userId)!!
+                val channelFromDb = channelService.getChannel(channelIdInSourceSystem, sourceSystemId)!!
+
+                channelService.removeSubscription(channelFromDb, userFromDb)
 
                 call.respond(mapOf("success" to true))
                 return@get

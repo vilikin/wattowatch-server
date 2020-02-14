@@ -1,0 +1,10 @@
+ALTER TABLE videos
+ADD COLUMN image_url VARCHAR,
+ADD COLUMN season INT2,
+ADD COLUMN episode INT2;
+
+ALTER TABLE live_streams
+ADD COLUMN image_url VARCHAR;
+
+ALTER TABLE channels
+ADD COLUMN image_url VARCHAR;

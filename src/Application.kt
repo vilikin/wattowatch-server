@@ -18,6 +18,8 @@ import io.ktor.features.CallLogging
 import io.ktor.features.Compression
 import io.ktor.features.ContentNegotiation
 import io.ktor.gson.gson
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.routing.routing
 import io.ktor.util.KtorExperimentalAPI
 import org.flywaydb.core.Flyway
@@ -33,7 +35,12 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
     install(Compression)
-    install(CORS)
+    install(CORS) {
+        anyHost()
+        HttpMethod.DefaultMethods.forEach { method(it) }
+        header(HttpHeaders.ContentType)
+        header("x-user-id")
+    }
     install(CallLogging)
     install(ContentNegotiation) {
         gson {

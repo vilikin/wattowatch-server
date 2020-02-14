@@ -45,4 +45,12 @@ class UserService(private val hikariDataSource: HikariDataSource) {
             }.asSingle)
         }
     }
+
+    fun getUser(name: String): PersistedUser? {
+        return using(sessionOf(hikariDataSource)) { session ->
+            session.run(queryOf("SELECT * FROM users WHERE name = :name", mapOf("name" to name)).map {
+                PersistedUser.fromRow(it)
+            }.asSingle)
+        }
+    }
 }
