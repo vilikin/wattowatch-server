@@ -1,0 +1,6 @@
+{
+  "name": "WattoWatch Server",
+  "description": "Server for WattoWatch App",
+  "image": "heroku/java",
+  "addons": [ "heroku-postgresql", "heroku-scheduler" ]
+}

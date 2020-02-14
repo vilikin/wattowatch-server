@@ -17,6 +17,7 @@ apply plugin: 'com.github.johnrengelman.shadow'
 
 group 'com.vilikin'
 version '0.0.1'
+mainClassName = 'io.ktor.server.netty.EngineMain'
 
 sourceSets {
     main.kotlin.srcDirs = main.java.srcDirs = ['src']
@@ -53,7 +54,7 @@ dependencies {
     testImplementation "io.ktor:ktor-server-tests:$ktor_version"
 }
 
-task serverJar(type: ShadowJar) {
+task serverJar(type: ShadowJar, dependsOn: 'build') {
     group = "shadow"
     description = "Builds an executable Jar for the API server"
     manifest.attributes 'Main-Class': 'io.ktor.server.netty.EngineMain'
@@ -90,3 +91,6 @@ compileKotlin {
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
+
+task stage(dependsOn: ['build', 'clean', 'serverJar', 'liveStreamsUpdateJar', 'videosUpdateJar'])
+build.mustRunAfter clean
