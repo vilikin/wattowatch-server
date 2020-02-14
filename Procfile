@@ -1,1 +1,1 @@
-server: java -jar ./build/libs/wattowatch-*-server.jar
+web: java -jar ./build/libs/wattowatch-*-server.jar
