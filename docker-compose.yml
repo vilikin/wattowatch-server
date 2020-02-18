@@ -2,6 +2,45 @@ version: '3.2'
 
 services:
 
+  app:
+    build:
+      context: .
+      dockerfile: './Dockerfile'
+    command: 'bash -c "source ./tools/setup-envs.sh && sh ./tools/wait-for-db.sh && java -jar ./build/libs/wattowatch-*-server.jar"'
+    ports:
+      - '8080:8080'
+    working_dir: '/app'
+    links:
+      - postgres
+    volumes:
+      - '.:/app'
+
+  videos-update:
+    build:
+      context: .
+      dockerfile: './Dockerfile'
+    command: 'bash -c "source ./tools/setup-envs.sh && sh ./tools/wait-for-db.sh && java -jar ./build/libs/wattowatch-*-videos-update.jar"'
+    ports:
+      - '8080:8080'
+    working_dir: '/app'
+    links:
+      - postgres
+    volumes:
+      - '.:/app'
+
+  live-streams-update:
+    build:
+      context: .
+      dockerfile: './Dockerfile'
+    command: 'bash -c "source ./tools/setup-envs.sh && sh ./tools/wait-for-db.sh && java -jar ./build/libs/wattowatch-*-live-streams-update.jar"'
+    ports:
+      - '8080:8080'
+    working_dir: '/app'
+    links:
+      - postgres
+    volumes:
+      - '.:/app'
+
   postgres:
     image: postgres:9.6.1
     ports:
