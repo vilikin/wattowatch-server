@@ -18,6 +18,7 @@ object Config {
     val jdbc = JDBCConfig
     val twitch = TwitchConfig
     val yle = YleConfig
+    val theMovieDb = TheMovieDbConfig
 
     val hikariDataSource = HikariCP.default(jdbc.url, jdbc.username, jdbc.password)
 }
@@ -37,4 +38,9 @@ object YleConfig {
     val baseUrl: String = requireEnvVar("YLE_BASE_URL")
     val appId: String = requireEnvVar("YLE_APP_ID")
     val appKey: String = requireEnvVar("YLE_APP_KEY")
+}
+
+object TheMovieDbConfig {
+    val baseUrl: String = requireEnvVar("THE_MOVIE_DB_BASE_URL")
+    val apiKey: String = requireEnvVar("THE_MOVIE_DB_API_KEY")
 }

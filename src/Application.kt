@@ -11,6 +11,7 @@ import com.vilikin.services.SourceSystemService
 import com.vilikin.services.UserService
 import com.vilikin.services.VideoService
 import com.vilikin.utils.DateTimeDeserializer
+import com.vilikin.utils.LocalDateDeserializer
 import io.ktor.application.Application
 import io.ktor.application.install
 import io.ktor.features.CORS
@@ -26,6 +27,7 @@ import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
 import org.flywaydb.core.Flyway
 import org.joda.time.DateTime
+import org.joda.time.LocalDate
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.singleton
 import org.kodein.di.ktor.kodein
@@ -43,6 +45,7 @@ fun main(args: Array<String>) {
         install(ContentNegotiation) {
             gson {
                 registerTypeAdapter(DateTime::class.java, DateTimeDeserializer())
+                registerTypeAdapter(LocalDate::class.java, LocalDateDeserializer())
             }
         }
 

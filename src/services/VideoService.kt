@@ -54,6 +54,7 @@ class VideoService(private val hikariDataSource: HikariDataSource) {
                     """
                         INSERT INTO videos (id_in_source_system, channel_id, title, url, published_at, image_url, episode, season)
                         VALUES (:id_in_source_system, :channel_id, :title, :url, :published_at, :image_url, :episode, :season)
+                        ON CONFLICT DO NOTHING
                     """,
                     mapOf(
                         "id_in_source_system" to video.idInSourceSystem,

@@ -3,6 +3,7 @@ package com.vilikin.actions
 import com.vilikin.Config
 import com.vilikin.services.ChannelService
 import com.vilikin.services.LiveStreamService
+import com.vilikin.services.SourceSystemFeature
 import com.vilikin.services.SourceSystemId
 import com.vilikin.services.SourceSystemService
 import com.vilikin.services.VideoService
@@ -24,6 +25,10 @@ fun main(args: Array<String>) {
     )
 
     runBlocking {
-        sourceSystemService.addNewVideosFromSourceSystem(SourceSystemId.YLE)
+        SourceSystemId.values()
+            .filter { it.supportedFeatures.contains(SourceSystemFeature.VIDEOS) }
+            .forEach {
+                sourceSystemService.addNewVideosFromSourceSystem(it)
+            }
     }
 }

@@ -1,5 +1,6 @@
 package com.vilikin.services
 
+import com.vilikin.services.sources.TheMovieDbSourceSystem
 import com.vilikin.services.sources.TwitchSourceSystem
 import com.vilikin.services.sources.YleSourceSystem
 import org.joda.time.DateTime
@@ -17,6 +18,13 @@ enum class SourceSystemId(
     ),
     YLE(
         YleSourceSystem,
+        EnumSet.of(
+            SourceSystemFeature.VIDEOS,
+            SourceSystemFeature.CHANNEL_SUGGESTIONS
+        )
+    ),
+    THE_MOVIE_DB(
+        TheMovieDbSourceSystem,
         EnumSet.of(
             SourceSystemFeature.VIDEOS,
             SourceSystemFeature.CHANNEL_SUGGESTIONS
